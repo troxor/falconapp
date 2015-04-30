@@ -1,4 +1,6 @@
 falcon
 gunicorn
 honcho
+json
+redis
 requests
