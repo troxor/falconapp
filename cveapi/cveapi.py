@@ -26,17 +26,13 @@ class CVEResource(object):
         """Handles GET requests"""
 
         cve = CVEItem(cve_id, self.redis)
-        j = json.dumps({'id': cve.cve['id'], 'rhsa': cve.cve['rhsa'], 'pkgs': cve.cve['pkgs'], 'stat': cve.cve['stat']})
         if cve.cve['stat'] >= 1:
             resp.status = falcon.HTTP_200
-            resp.body = "%s %s\n%s\n%s\n" % (cve.cve['id'], cve.cve['stat'], cve.cve['rhsa'], cve.cve['pkgs'])
-            resp.body = j
         elif (cve.cve['stat'] == 0):
             resp.status = falcon.HTTP_200
-            resp.body = 'not vulnerable' #jsonify me?
         else:
             resp.status = falcon.HTTP_503
-            resp.body = 'fail %s' % cve.cve['stat']
+        resp.body = json.dumps({'id': cve.cve['id'], 'rhsa': cve.cve['rhsa'], 'pkgs': cve.cve['pkgs'], 'stat': cve.cve['stat']})
 
 class IndexResource:
     def on_get(self, req, resp):
