@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import falcon
 import json
@@ -18,9 +19,9 @@ class CVEResource(object):
 
         try:
             if self.redis.ping():
-                print "redis connection established"
+                print('redis connection established')
         except:
-            print 'no redis'
+            print('no redis')
 
     def on_get(self, req, resp, cve_id):
         """Handles GET requests"""
@@ -32,6 +33,8 @@ class CVEResource(object):
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_503
+        resp.set_header('Access-Control-Allow-Origin', cfg['CORS'])
+        resp.content_type = 'application/json'
         resp.body = json.dumps({'id': cve.cve['id'], 'rhsa': cve.cve['rhsa'], 'pkgs': cve.cve['pkgs'], 'stat': cve.cve['stat']})
 
 class IndexResource:

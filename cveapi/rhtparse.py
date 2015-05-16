@@ -27,7 +27,7 @@ class CVEItem(object):
                 if len(self.cve['pkgs']) >= 1:
                     r.lpush(cve_id+'-PKGS', *self.cve['pkgs'])
                 else:
-                    print "damnit must not be fixed"
+                    print("damnit must not be fixed")
             
             self.cve['stat'] = r.llen(cve_id+'-PKGS')
             r.set(cve_id, self.cve['stat'])  #status is length of packages
@@ -43,10 +43,10 @@ class CVEItem(object):
         BASE="https://access.redhat.com/security/cve/"
         pattern = re.compile('<td>Red Hat Enterprise Linux version [567].*</td>[\n\t ]+<td>.*(RHSA-[0-9]+-[0-9]+)')
 
-        print " * looking for RHSAs about %s" % (self.cve['id'])
+        print(" * looking for RHSAs about %s" % (self.cve['id']))
         r = requests.get(BASE+self.cve['id'])
         if (r.status_code != 200):
-            print "FATAL: %s is broken" % (BASE)
+            print("FATAL: %s is broken" % (BASE))
             return 'fail'
         self.cve['rhsa'] = list(set(pattern.findall(r.text)))
 
@@ -56,7 +56,7 @@ class CVEItem(object):
         pkglist = []
 
         for r in self.cve['rhsa']:
-            print "   * looking for pkgs that fix %s" % (r.replace(':', '-'))
+            print("   * looking for pkgs that fix %s" % (r.replace(':', '-')))
             r = requests.get(BASE+r.replace(':', '-')+'.html')
             pkglist.extend(pattern.findall(r.text))
 
