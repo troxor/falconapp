@@ -22,9 +22,15 @@ class CVEResource(object):
                 print('redis connection established')
         except:
             print('no redis')
+        if(cfg['LOGVERBOSE']):
+            for i in sorted(cfg):
+                print("cfg[%s]=%s" % (i, cfg[i]))
 
     def on_get(self, req, resp, cve_id):
         """Handles GET requests"""
+
+        if (cfg['LOGVERBOSE']):
+            print("request for %s" % req.url)
 
         cve = CVEItem(cve_id, self.redis)
         if cve.cve['stat'] >= 1:
@@ -33,7 +39,9 @@ class CVEResource(object):
             resp.status = falcon.HTTP_200
         else:
             resp.status = falcon.HTTP_503
+
         resp.set_header('Access-Control-Allow-Origin', cfg['CORS'])
+
         resp.content_type = 'application/json'
         resp.body = json.dumps({'id': cve.cve['id'], 'rhsa': cve.cve['rhsa'], 'pkgs': cve.cve['pkgs'], 'stat': cve.cve['stat']})
 
