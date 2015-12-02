@@ -1,0 +1,19 @@
+web:
+  build: .
+  command: honcho start
+  environment:
+    PYTHONUNBUFFERED: 1
+    PYTHONIOENCODING: "utf-8"
+    LISTEN: "0.0.0.0"
+    PORT: 3000
+    DEBUG: "True"
+  ports:
+    - "3000:3000"
+  links:
+    - cache
+
+cache:
+  image: redis
+  ports:
+    - "6379:6379"
+
