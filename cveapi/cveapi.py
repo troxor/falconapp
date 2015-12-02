@@ -11,8 +11,8 @@ from cveapi.rhtparse import CVEItem
 class CVEResource(object):
 
     def __init__(self, cfg):
-        self.dbhost = cfg['REDISHOST']
-        self.dbport = cfg['REDISPORT']
+        self.dbhost = cfg['CACHE_PORT_6379_TCP_ADDR']
+        self.dbport = cfg['CACHE_PORT_6379_TCP_PORT']
 
         self.redis = redis.StrictRedis(host=self.dbhost, port=self.dbport)
         #self.rpool = redis.ConnectionPool(max_connections=5, host=self.dbhost, port=self.dbport)
@@ -54,8 +54,8 @@ class IndexResource:
 
 class TestResource:
     def __init__(self, cfg):
-        self.dbhost = cfg['REDISHOST']
-        self.dbport = cfg['REDISPORT']
+        self.dbhost = cfg['CACHE_PORT_6379_TCP_ADDR']
+        self.dbport = cfg['CACHE_PORT_6379_TCP_PORT']
         self.redis = redis.StrictRedis(host=self.dbhost, port=self.dbport)
         self.fails = 0
         try:

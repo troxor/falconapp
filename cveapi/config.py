@@ -7,8 +7,9 @@ cfg = {}
 cfg['LISTEN'] = '0.0.0.0'
 cfg['PORT'] = 3000
 
-cfg['REDISHOST'] = '127.0.0.1'
-cfg['REDISPORT'] = 6379
+cfg['CACHE_PORT_6379_TCP_ADDR'] = '127.0.0.1'
+cfg['CACHE_PORT_6379_TCP_PORT'] = 6379
+
 
 cfg['CORS'] = 'http://api.example.com'
 
