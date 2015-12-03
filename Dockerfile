@@ -2,13 +2,12 @@
 FROM gliderlabs/alpine:3.2
 
 RUN apk add --update \
-    bash \
-    python \
-    python-dev \
-    py-pip \
     build-base \
     cython \
     cython-dev \
+    py-pip \
+    python \
+    python-dev \
   && rm -rf /var/cache/apk/*
 
 WORKDIR /app
