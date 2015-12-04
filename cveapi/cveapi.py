@@ -11,26 +11,24 @@ from cveapi.rhtparse import CVEItem
 class CVEResource(object):
 
     def __init__(self, cfg):
+        print('Starting CVE API')
         self.dbhost = cfg['CACHE_PORT_6379_TCP_ADDR']
         self.dbport = cfg['CACHE_PORT_6379_TCP_PORT']
+        self.hostname = cfg['HOSTNAME']
+
+        if(cfg['DEBUG']):
+            print("INFO: Application configuration dump")
+            for i in sorted(cfg):
+                print("INFO: cfg[%s]=%s" % (i, cfg[i]))
 
         self.redis = redis.StrictRedis(host=self.dbhost, port=self.dbport)
         #self.rpool = redis.ConnectionPool(max_connections=5, host=self.dbhost, port=self.dbport)
 
-        try:
-            if self.redis.ping():
-                print('redis connection established')
-        except:
-            print('no redis')
-        if(cfg['LOGVERBOSE']):
-            for i in sorted(cfg):
-                print("cfg[%s]=%s" % (i, cfg[i]))
-
     def on_get(self, req, resp, cve_id):
         """Handles GET requests"""
 
-        if (cfg['LOGVERBOSE']):
-            print("request for %s" % req.url)
+        if (cfg['DEBUG']):
+            print("INFO: Request for %s" % req.url)
 
         cve = CVEItem(cve_id, self.redis)
         if cve.cve['stat'] >= 1:
@@ -41,9 +39,15 @@ class CVEResource(object):
             resp.status = falcon.HTTP_503
 
         resp.set_header('Access-Control-Allow-Origin', cfg['CORS'])
+        if (cfg['DEBUG']):
+            resp.set_header('X-Host-Served-From', self.hostname)
 
         resp.content_type = 'application/json'
-        resp.body = json.dumps({'id': cve.cve['id'], 'rhsa': cve.cve['rhsa'], 'pkgs': cve.cve['pkgs'], 'stat': cve.cve['stat']})
+        resp.body = json.dumps({'id':   cve.cve['id'],
+                                'rhsa': cve.cve['rhsa'],
+                                'pkgs': cve.cve['pkgs'],
+                                'stat': cve.cve['stat']
+                              })
 
 class IndexResource:
     def on_get(self, req, resp):
@@ -76,7 +80,7 @@ class TestResource:
             page += 'Redis FAIL\n'
 
         resp.status = falcon.HTTP_200
-        resp.body = 'fails=%d %d\n\n' % (fails, self.fails) + page
+        resp.body = 'fails=%d, self.fails=%d\n\n' % (fails, self.fails) + page
 
 app = falcon.API()
 

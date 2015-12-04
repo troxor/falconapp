@@ -1,12 +1,11 @@
 import re
 import requests
+from redis import ConnectionError
 from string import replace
 
 class CVEItem(object):
 
-    # assuming redis connection is ok
-
-    def __init__(self, cve_id, r):
+    def __init__(self, cve_id, redisconn):
         self.cve = {}
 
         self.cve['id'] = cve_id
@@ -14,41 +13,49 @@ class CVEItem(object):
         self.cve['pkgs'] = []
         self.cve['stat'] = -1
 
-        if not r.exists(cve_id):
-            self.cve2rhsa()
-            if len(self.cve['rhsa']) == 0:
-                # only cache if RHSAs are found
-                self.cve['stat'] = 0
-                r.set(cve_id, self.cve['stat'])
-                return
-            else:
-                r.lpush(cve_id+'-RHSA', *self.cve['rhsa'])
-                self.rhsa2pkgs()
-                if len(self.cve['pkgs']) >= 1:
-                    r.lpush(cve_id+'-PKGS', *self.cve['pkgs'])
-                else:
-                    print("damnit must not be fixed")
-            
-            self.cve['stat'] = r.llen(cve_id+'-PKGS')
-            r.set(cve_id, self.cve['stat'])  #status is length of packages
-        else:
-            self.cve['rhsa'] = r.lrange(cve_id+'-RHSA', 0, -1)
-            self.cve['pkgs'] = r.lrange(cve_id+'-PKGS', 0, -1)
-            self.cve['stat'] = r.get(cve_id)
+        try:
+            redisconn.ping()
+            print('INFO: Redis okay')
 
+            if not redisconn.exists(cve_id):
+                self.cve2rhsa()
+                if len(self.cve['rhsa']) == 0:
+                    # only cache if RHSAs are found
+                    self.cve['stat'] = 0
+                    redisconn.set(cve_id, self.cve['stat'])
+                    return
+                else:
+                    redisconn.lpush(cve_id+'-RHSA', *self.cve['rhsa'])
+                    self.rhsa2pkgs()
+                    if len(self.cve['pkgs']) >= 1:
+                        redisconn.lpush(cve_id+'-PKGS', *self.cve['pkgs'])
+                    else:
+                        print("damnit must not be fixed")
+                
+                self.cve['stat'] = redisconn.llen(cve_id+'-PKGS')
+                redisconn.set(cve_id, self.cve['stat'])  #status is length of packages
+            else:
+                self.cve['rhsa'] = redisconn.lrange(cve_id+'-RHSA', 0, -1)
+                self.cve['pkgs'] = redisconn.lrange(cve_id+'-PKGS', 0, -1)
+                self.cve['stat'] = redisconn.get(cve_id)
+        except ConnectionError as e:
+            print('WARN: ' + str(e))
+            self.cve2rhsa()
+            self.rhsa2pkgs()
 
     def cve2rhsa(self):
-        # https://access.redhat.com/security/cve/CVE-2014-3581 # vulns
+        # https://access.redhat.com/security/cve/CVE-2014-3581 # vuln
         # https://access.redhat.com/security/cve/CVE-2015-0201 # not vuln
         BASE="https://access.redhat.com/security/cve/"
-        pattern = re.compile('<td>Red Hat Enterprise Linux version [567].*</td>[\n\t ]+<td>.*(RHSA-[0-9]+-[0-9]+)')
+        pattern = re.compile('(RHSA-[0-9]+[-:][0-9]+).html')
 
-        print(" * looking for RHSAs about %s" % (self.cve['id']))
+        print("INFO: * looking for RHSAs about %s" % (self.cve['id']))
         r = requests.get(BASE+self.cve['id'])
         if (r.status_code != 200):
             print("FATAL: %s is broken" % (BASE))
             return 'fail'
         self.cve['rhsa'] = list(set(pattern.findall(r.text)))
+        print(self.cve['rhsa'])
 
     def rhsa2pkgs(self):
         BASE="https://rhn.redhat.com/errata/"
