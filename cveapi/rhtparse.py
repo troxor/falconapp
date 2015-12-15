@@ -16,6 +16,7 @@ class CVEItem(object):
         if (cve_id == 'CVE-1234-1234'):
             self.cve['rhsa'] = ['1234ok']
             self.cve['pkgs'] = ['linux-1.2.3', 'whatever-4.5.6']
+            self.cve['stat'] = len(self.cve['pkgs'])
             return
 
         try:
@@ -47,6 +48,7 @@ class CVEItem(object):
             print('WARN: ' + str(e))
             self.cve2rhsa()
             self.rhsa2pkgs()
+            self.cve['stat'] = len(self.cve['pkgs'])
 
     def cve2rhsa(self):
         # https://access.redhat.com/security/cve/CVE-2014-3581 # vuln
