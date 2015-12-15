@@ -13,6 +13,11 @@ class CVEItem(object):
         self.cve['pkgs'] = []
         self.cve['stat'] = -1
 
+        if (cve_id == 'CVE-1234-1234'):
+            self.cve['rhsa'] = ['1234ok']
+            self.cve['pkgs'] = ['linux-1.2.3', 'whatever-4.5.6']
+            return
+
         try:
             redisconn.ping()
             print('INFO: Redis okay')
