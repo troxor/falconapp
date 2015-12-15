@@ -1,7 +1,6 @@
 import re
 import requests
 from redis import ConnectionError
-from string import replace
 
 class CVEItem(object):
 
@@ -70,7 +69,7 @@ class CVEItem(object):
         pkglist = []
 
         for r in self.cve['rhsa']:
-            print("   * looking for pkgs that fix %s" % (r.replace(':', '-')))
+            print("   * looking for pkgs that fix %s" % (str.replace(r, ':', '-')))
             r = requests.get(BASE+r.replace(':', '-')+'.html')
             pkglist.extend(pattern.findall(r.text))
 
