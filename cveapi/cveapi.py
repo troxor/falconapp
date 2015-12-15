@@ -82,9 +82,19 @@ class TestResource:
         resp.status = falcon.HTTP_200
         resp.body = 'fails=%d, self.fails=%d\n\n' % (fails, self.fails) + page
 
+class DebugResource:
+    def __init__(self, cfg):
+        pass
+
+    def on_get(self, req, resp):
+        resp.status = falcon.HTTP_200
+        resp.body = json.dumps(cfg)
+
+
 app = falcon.API()
 
 app.add_route('/', IndexResource())
 app.add_route('/cve/{cve_id}', CVEResource(cfg))
 app.add_route('/test', TestResource(cfg))
+app.add_route('/debug', DebugResource(cfg))
 

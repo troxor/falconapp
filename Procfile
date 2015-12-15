@@ -1,1 +1,1 @@
-web: gunicorn -b $LISTEN:$PORT cveapi.cveapi:app
+web: gunicorn -b $LISTEN:$PORT cveapi.cveapi:app --log-file -
